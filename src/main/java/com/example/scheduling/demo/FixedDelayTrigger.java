@@ -10,7 +10,7 @@ public class FixedDelayTrigger {
 	@Autowired
 	private DemoTask task;
 
-	@Scheduled(fixedDelay = 1000L)
+	@Scheduled(fixedDelay = 200L)
 	public void triggerDemoTaskPeriodically() {
 		task.run();
 	}

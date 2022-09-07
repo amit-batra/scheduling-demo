@@ -1,5 +1,6 @@
 package com.example.scheduling.demo;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.text.DateFormat;
@@ -14,20 +15,23 @@ public class DemoTask implements Runnable {
 	private static final DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss:SSS");
 	private static final long DESIRED_GAP_BETWEEN_INVOCATIONS = 200L;
 
+	@Autowired
+	private QuotaConcurrentLinkedQueue queue;
+
 	private long previousTimeMillis;
 
 	public void run() {
 		final long currentTimeMillis = System.currentTimeMillis();
 
-		if (currentTimeMillis - previousTimeMillis >= DESIRED_GAP_BETWEEN_INVOCATIONS) {
+		if (this.queue.size() >= 100 || currentTimeMillis - previousTimeMillis >= DESIRED_GAP_BETWEEN_INVOCATIONS) {
 			synchronized (this) {
-				final String previousDate = dateFormat.format(new Date(previousTimeMillis));
-				final String currentDate = dateFormat.format(new Date(currentTimeMillis));
+				if (this.queue.size() >= 100 || currentTimeMillis - previousTimeMillis >= DESIRED_GAP_BETWEEN_INVOCATIONS) {
+					final String previousDate = dateFormat.format(new Date(previousTimeMillis));
+					final String currentDate = dateFormat.format(new Date(currentTimeMillis));
 
-				logger.info(String.format("Previous execution: [%s]; Current execution: [%s]", previousDate, currentDate));
+					logger.info(String.format("Previous execution: [%s]; Current execution: [%s]", previousDate, currentDate));
+				}
 			}
-		} else {
-			logger.info("Skipping execution");
 		}
 
 		previousTimeMillis = currentTimeMillis;
